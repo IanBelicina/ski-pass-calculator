@@ -29,3 +29,31 @@ def list_resorts(request):
             encoder=QuerySetEncoder,  # Use the custom encoder
             safe=False
         )
+
+@require_http_methods(["GET","DELETE"])
+def show_resort(request, id):
+
+    if request.method == "GET":
+        try:
+            resort = Resort.objects.get(id=id)
+            return JsonResponse(
+                {"resort":model_to_dict(resort)},
+                encoder=QuerySetEncoder,
+                safe=False
+            )
+        except Resort.DoesNotExist:
+            response = JsonResponse({"Message": f"Resort with ID {id} does not exist"})
+            response.status_code = 404
+            return response
+    else:
+        try:
+            resort = Resort.objects.get(id=id)
+            resort.delete()
+            return JsonResponse(
+                {"deleted":True},
+                safe=False
+            )
+        except Resort.DoesNotExist:
+            response = JsonResponse({"Message": f'Resort with ID {id} does not exist'})
+            response.status_code=404
+            return response
